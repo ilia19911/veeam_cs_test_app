@@ -74,7 +74,7 @@ internal static class ProcessMonitor
         Console.BackgroundColor = ConsoleColor.Magenta;
         Console.WriteLine("Process monitor program. \n Add process menu");
         Console.BackgroundColor = ConsoleColor.Black;
-        Console.WriteLine("Press H and enter for help, type exit to go to the main menu ");
+        Console.WriteLine("Press -h and enter for help, type exit to go to the main menu ");
         Process? myProcess = null;
         foreach (var message in MessageList)
         {
@@ -86,7 +86,7 @@ internal static class ProcessMonitor
         if (searchName == "")
         {
             var str = Console.ReadLine()?.ToLower();
-            searchName = str ?? "&*()_$#@";   
+            searchName = str ?? "";
         }
 
         if (searchName == null)
@@ -95,20 +95,20 @@ internal static class ProcessMonitor
         }
         switch (searchName)
         {
-            case "&*()_$#@":
+            case "":
                 MessageList.Add(("Please, type valid name.", ConsoleColor.Yellow));
                 break;
-            case "h":
+            case "-h":
                 MessageList.Add(("Press l and enter  to get processes list.", ConsoleColor.Black));
-                MessageList.Add(("Press f and enter  to set or reset force flag.", ConsoleColor.Black));
+                MessageList.Add(("Press -f and enter  to set or reset force flag.", ConsoleColor.Black));
                 MessageList.Add(("Type process id / name (or regex) to select process.", ConsoleColor.Black));
                 MessageList.Add(("Type exit to close to main menu.", ConsoleColor.Black));
                 break;
-            case "f":
+            case "-f":
                 _force ^= true;
                 MessageList.Add(("Force flag is " + _force,  ConsoleColor.Black));
                 break;
-            case "l":
+            case "-l":
                 MessageList.Add(("Process list", ConsoleColor.Magenta));
                 MessageList.Add(("id               name ", ConsoleColor.Black));
                 Process?[] processCollection = Process.GetProcesses();
@@ -259,6 +259,10 @@ internal static class ProcessMonitor
                             {
                                 matchesProcesses.Add(p);   
                             }   
+                            else if (regex.IsMatch(p.SearchName))
+                            {
+                                matchesProcesses.Add(p); 
+                            }
                         }
                     }
                     if (matchesProcesses.Count == 1)
@@ -344,11 +348,11 @@ internal static class ProcessMonitor
             case "s":
                 MessageList.Add(("Name for process search = " +_selectedProcess.SearchName, ConsoleColor.Black));
                 MessageList.Add(("Check frequency = " + _selectedProcess.Frequency, ConsoleColor.Black));
-                MessageList.Add(("Max live time = " +  TimeSpan.FromMinutes( _selectedProcess.LiveTime).ToString("dd\\.hh\\:mm\\:ss"), ConsoleColor.Black));
+                MessageList.Add(("Max live time =     " +  TimeSpan.FromMinutes( _selectedProcess.LiveTime).ToString("dd\\.hh\\:mm\\:ss") + "(d.h.m.s)", ConsoleColor.Black));
                 if (_selectedProcess.MyProcess != null)
                 {
+                    MessageList.Add(("Time after start = "+(DateTime.Now - _selectedProcess.MyProcess.StartTime).ToString(@"dd\.hh\:mm\:ss") + "(d.h.m.s)", ConsoleColor.Black));
                     MessageList.Add(("Process name = " + _selectedProcess.MyProcess.ProcessName, ConsoleColor.Black));
-                    MessageList.Add(("Time after start = "+(DateTime.Now - _selectedProcess.MyProcess.StartTime).ToString(@"dd\.hh\:mm\:ss"), ConsoleColor.Black));
                 }
                 break;
             case "exit":

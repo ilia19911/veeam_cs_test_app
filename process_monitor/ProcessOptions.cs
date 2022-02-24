@@ -14,23 +14,21 @@ public class ProcessOptions
     private void Start()
     {
         if (_processOptTask is not null && _processOptTask.IsAlive) return;
+        _success = true;
         _mre.Set();
         _processOptTask = new Thread(ProcessTask);
         _processOptTask.Start();
     }
-    public ProcessOptions(string? input, double frequency , double liveTime , Process? process = null!)
+    public ProcessOptions(string input, double frequency , double liveTime , Process? process = null!)
     {
         SearchName = input;
         Frequency = frequency;
         LiveTime = liveTime;
         MyProcess = process;
-        if (MyProcess != null)
-        {
-            Start();
-        }
+        Start();
     }
 
-    public readonly string? SearchName;
+    public readonly string SearchName;
     public double Frequency;
     private TimeSpan Interval
     {
@@ -72,7 +70,8 @@ public class ProcessOptions
             }
             else
             {
-
+                try
+                {
                     MyProcess.EnableRaisingEvents = true;
                     MyProcess.Exited += (_, _) =>
                     {
@@ -89,6 +88,13 @@ public class ProcessOptions
                             MyProcess?.ProcessName, MyProcess?.Id);
                         MyProcess = null;
                     }
+                }
+                catch ( Exception e)
+                {
+                    _success = false;
+                    Console.WriteLine("Can't kill this process, not enough access ");
+                    Console.WriteLine(e);
+                }
             }
             _mre.WaitOne(Interval);
         }

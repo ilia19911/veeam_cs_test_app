@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "S4tc6W8jsXGr9O9GrP73vW70olap/Tw9pTjJo5h2Rodack4jN0Y2IwuyONUUcAB6QHIRzpybIt4MKCe85H3VDA==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\iahve\\RiderProjects\\process_monitor\\process_monitor\\process_monitor.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\iahve\\.nuget\\packages\\commandlineparser\\2.8.0\\commandlineparser.2.8.0.nupkg.sha512"
+  ],
+  "logs": []
+}

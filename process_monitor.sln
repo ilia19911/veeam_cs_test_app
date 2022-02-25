@@ -12,5 +12,6 @@ Global
 		{14A1E3C7-1468-4188-97D3-DDBB800F69BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{14A1E3C7-1468-4188-97D3-DDBB800F69BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{14A1E3C7-1468-4188-97D3-DDBB800F69BC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{14A1E3C7-1468-4188-97D3-DDBB800F69BC}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

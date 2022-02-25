@@ -31,7 +31,7 @@ public class ProcessOptions
     /// Constructor of ProcessOptions
     /// </summary>
     /// <param name="searchName"> Process search name </param>
-    /// <param name="frequency">Process check frequency</param>
+    /// <param name="frequency">Process check _frequency</param>
     /// <param name="maxLiveTime">Process max live time</param>
     /// <param name="process">Process to be monitored</param>
     public ProcessOptions(string searchName, double frequency , double maxLiveTime , Process? process = null!)
@@ -47,10 +47,23 @@ public class ProcessOptions
     /// The name of the search process. This is necessary to find the process if it killed
     /// </summary>
     public readonly string SearchName;
+
+    private double _frequency;
     /// <summary>
-    /// Process check frequency. 
+    /// Process check _frequency. 
     /// </summary>
-    public double Frequency;
+    public double Frequency
+    {
+        get => _frequency;
+        set
+        {
+            if (value > 0)
+            {
+                _frequency = value;
+            }
+        }
+    }
+
     /// <summary>
     /// This interval is used to wait for the next iteration of the check.
     /// </summary>
@@ -62,10 +75,22 @@ public class ProcessOptions
             return interval;
         }
     }
+    private double _maxLiveTime;
+
     /// <summary>
     /// Maximum lifetime. If the process lifetime is greater than the maximum time, the process will be killed.
     /// </summary>
-    public double MaxLiveTime;
+    public double MaxLiveTime
+    {
+        get => _maxLiveTime;
+        set
+        {
+            if (value > 0)
+            {
+                _maxLiveTime = value;
+            }
+        }
+    }
     
     /// <summary>
     /// Process object. Can be null, if the process is killed or user set a force flag but the process is not found

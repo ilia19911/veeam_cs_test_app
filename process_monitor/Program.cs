@@ -74,6 +74,11 @@ internal static class ProcessMonitor
 
             if (double.TryParse(str, out result))
             {
+                if (result <= 0)
+                {
+                    Console.WriteLine("value cannot be less than zero");
+                    return false;
+                }
                 return true;
             }
             else
@@ -91,9 +96,10 @@ internal static class ProcessMonitor
     /// <param name="maxLiveTime">Process max live time</param>
     private static void AddProcess(Process? myProcess, string searchName, double frequency=0, double maxLiveTime=0)
     {
-        if (frequency!=0 || AskParam("Please enter check frequency for this process, or \"exit\" for  cancel", out frequency))
+        string name = myProcess?.ProcessName ?? searchName;
+        if (frequency!=0 || AskParam("Please enter check frequency (p.m) for "+ name +" process, or \"exit\" for  cancel", out frequency))
         {
-            if (maxLiveTime != 0 || AskParam("Please enter live time for this process, or \"exit\" for  cancel", out maxLiveTime))
+            if (maxLiveTime != 0 || AskParam("Please enter live time (sec) for "+  name  +" process, or \"exit\" for  cancel", out maxLiveTime))
             {
                 if (myProcess != null)
                 {
@@ -312,16 +318,13 @@ internal static class ProcessMonitor
                     foreach (var p in MyProcesses)
                     {
                         var regex = new Regex(input);
-                        if (p?.SearchName != null && regex.IsMatch(p.SearchName))
+                        if(p.MyProcess != null && regex.IsMatch(p.MyProcess.ProcessName.ToLower()))
                         {
-                            if(p.MyProcess != null && regex.IsMatch(p.MyProcess.ProcessName))
-                            {
-                                matchesProcesses.Add(p);   
-                            }   
-                            else if (regex.IsMatch(p.SearchName))
-                            {
-                                matchesProcesses.Add(p); 
-                            }
+                            matchesProcesses.Add(p);   
+                        }   
+                        else if (p?.SearchName != null && regex.IsMatch(p.SearchName.ToLower()))
+                        {
+                            matchesProcesses.Add(p);
                         }
                     }
                     if (matchesProcesses.Count == 1)
@@ -335,7 +338,6 @@ internal static class ProcessMonitor
                     _programState = State.ProcessMenu;
                 }
                 break;
-                
         }
     }
     /// <summary>
@@ -377,8 +379,15 @@ internal static class ProcessMonitor
                 input = Console.ReadLine()?.ToLower();
                 if (double.TryParse(input, out var frequency))
                 {
-                    _selectedProcess.Frequency = frequency;
-                    MessageList.Add(("frequency set as " + frequency, ConsoleColor.Black));
+                    if (frequency > 0)
+                    {
+                        _selectedProcess.Frequency = frequency;
+                        MessageList.Add(("frequency set as " + frequency, ConsoleColor.Black));
+                    }
+                    else
+                    {
+                        MessageList.Add(("frequency can't be zero or less " , ConsoleColor.Yellow));
+                    }
                 }
                 break;
             case "t":
@@ -386,8 +395,15 @@ internal static class ProcessMonitor
                 input = Console.ReadLine()?.ToLower();
                 if (double.TryParse(input, out var lifetime))
                 {
-                    _selectedProcess.MaxLiveTime = lifetime;
-                    MessageList.Add(("Max live time set as " + lifetime, ConsoleColor.Black));
+                    if (lifetime > 0)
+                    {
+                        _selectedProcess.MaxLiveTime = lifetime;
+                        MessageList.Add(("Max live time set as " + lifetime, ConsoleColor.Black));
+                    }
+                    else
+                    {
+                        MessageList.Add(("Max live time can't zero or less" , ConsoleColor.Yellow));
+                    }
                 }
                 break;
             case "d":

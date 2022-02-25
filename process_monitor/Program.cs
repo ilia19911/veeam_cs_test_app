@@ -6,19 +6,60 @@ namespace process_monitor;
 
 internal static class ProcessMonitor
 {
+    /// <summary>
+    /// Program menu state machine 
+    /// </summary>
     private enum State
     {
+        /// <summary>
+        /// Main menu state.
+        /// </summary>
         MainMenu,
+        /// <summary>
+        /// Adding new process state
+        /// </summary>
         NewProcessMenu,
+        /// <summary>
+        /// Process settings menu
+        /// </summary>
         ProcessMenu,
-        Stop
+        /// <summary>
+        /// Stop program. It calls Stop methods in process monitors
+        /// </summary>
+        Stop,
+        /// <summary>
+        /// Simply exit program
+        /// </summary>
+        Exit
     }
 
+    /// <summary>
+    /// Program state. To understand, go to State enum
+    /// </summary>
     private static State _programState;
+    
+    /// <summary>
+    /// List of process options. When you add a new process to the process monitor, it is added to this list
+    /// </summary>
     private static readonly List<ProcessOptions?> MyProcesses = new List<ProcessOptions?>();
+    /// <summary>
+    /// selected process. This is necessary to control a particular process.
+    /// </summary>
     private static ProcessOptions? _selectedProcess;
+    /// <summary>
+    /// These messages will be printed in their order after the menu text.
+    /// </summary>
     private static readonly List<(string,ConsoleColor)> MessageList = new();
+    /// <summary>
+    /// this is needed to force adding a process when no process is defined
+    /// </summary>
     private static bool _force;
+    /// <summary>
+    /// Internal Method for Generic Parameter Setting
+    /// </summary>
+    /// <param name="message">message that is displayed before entering the parameter</param>
+    /// <param name="result">the parameter entered by the user</param>
+    /// <returns> true if the user entered the parameter successfully </returns>
     private static bool AskParam(string message, out double result)
     {
         while (true)
@@ -41,16 +82,22 @@ internal static class ProcessMonitor
             }
         }
     }
-
-    private static void AddProcess(Process? myProcess, double frequency, double liveTime, string searchName)
+    /// <summary>
+    /// Internal Method for process adding from different location. Asks frequency and time live if they not passed 0
+    /// </summary>
+    /// <param name="myProcess">Process object. Can be null if force is true. </param>
+    /// <param name="searchName">The name by which the process was searched </param>
+    /// <param name="frequency">Process check frequency</param>
+    /// <param name="maxLiveTime">Process max live time</param>
+    private static void AddProcess(Process? myProcess, string searchName, double frequency=0, double maxLiveTime=0)
     {
         if (frequency!=0 || AskParam("Please enter check frequency for this process, or \"exit\" for  cancel", out frequency))
         {
-            if (liveTime != 0 || AskParam("Please enter live time for this process, or \"exit\" for  cancel", out liveTime))
+            if (maxLiveTime != 0 || AskParam("Please enter live time for this process, or \"exit\" for  cancel", out maxLiveTime))
             {
                 if (myProcess != null)
                 {
-                    var processOpt = new ProcessOptions(myProcess.ProcessName, frequency, liveTime,  myProcess);
+                    var processOpt = new ProcessOptions(myProcess.ProcessName, frequency, maxLiveTime,  myProcess);
                     MyProcesses.Add(processOpt);
                     MessageList.Add((
                         "Process " + myProcess.ProcessName + ", id " + myProcess.Id + " added.",
@@ -58,7 +105,7 @@ internal static class ProcessMonitor
                 }
                 else
                 {
-                    var processOpt = new ProcessOptions(searchName, frequency, liveTime,  myProcess);
+                    var processOpt = new ProcessOptions(searchName, frequency, maxLiveTime,  myProcess);
                     MyProcesses.Add(processOpt);
                     MessageList.Add((
                         "Process search name " + searchName +  " added.",
@@ -68,7 +115,13 @@ internal static class ProcessMonitor
             }
         }
     }
-    private static void AddProcessMenuProcessing(string searchName = "",double frequency = 0, double liveTime = 0)
+    /// <summary>
+    /// Process add menu. Here you add a new process to the MyProcesses list. Params need to add process from program args
+    /// </summary>
+    /// <param name="searchName">The name by which the process was searched </param>
+    /// <param name="frequency">Process check frequency</param>
+    /// <param name="maxLiveTime">Process max live time</param>
+    private static void AddProcessMenuProcessing(string searchName = "",double frequency = 0, double maxLiveTime = 0)
     {
         Console.Clear();
         Console.BackgroundColor = ConsoleColor.Magenta;
@@ -130,7 +183,7 @@ internal static class ProcessMonitor
                         if (MyProcesses.Find(x => x?.MyProcess?.Id == id) == null)
                         {
                             MessageList.Add(("You selected process " + myProcess.ProcessName, ConsoleColor.Black));
-                            AddProcess(myProcess, frequency, liveTime, searchName);
+                            AddProcess(myProcess, searchName, frequency, maxLiveTime);
                         }
                         else
                         {
@@ -164,7 +217,7 @@ internal static class ProcessMonitor
                             {
                                 MessageList.Add(("You selected process " + myProcess.ProcessName, ConsoleColor.Black));
                                 Debug.Assert(searchName != null, nameof(searchName) + " != null");
-                                AddProcess(myProcess, frequency, liveTime, searchName);
+                                AddProcess(myProcess, searchName, frequency, maxLiveTime);
                             }
                             else
                             {
@@ -179,7 +232,7 @@ internal static class ProcessMonitor
                             MessageList.Add(("Process not founded, but was added cause force flag ", ConsoleColor.Yellow));
                             MessageList.Add(("Process search name " + searchName, ConsoleColor.Yellow));
                             Debug.Assert(searchName != null, nameof(searchName) + " != null");
-                            AddProcess(myProcess, frequency, liveTime, searchName);
+                            AddProcess(myProcess, searchName, frequency, maxLiveTime);
                         }
                         else
                         {
@@ -190,6 +243,9 @@ internal static class ProcessMonitor
                 break;
         }
     }
+    /// <summary>
+    /// Processing the main menu. Here you choose what to do
+    /// </summary>
     private static void MainMenuProcessing()
     {
         Console.Clear();
@@ -207,6 +263,9 @@ internal static class ProcessMonitor
         var input = Console.ReadLine()?.ToLower();
         switch (input)
         {
+            case "exit":
+                _programState = State.Stop;
+                break;
             case "h":
                 MessageList.Add(("This is main menu of process monitor program.", ConsoleColor.Black));
                 MessageList.Add(("Press A and enter to add new process.", ConsoleColor.Black));
@@ -238,7 +297,7 @@ internal static class ProcessMonitor
 
                     if (process == null) continue;
                     MessageList.Add(("Check frequency " + process.Frequency + "p.m.", randomBar));
-                    MessageList.Add(("Max live time " + process.LiveTime + "sec.", randomBar));
+                    MessageList.Add(("Max live time " + process.MaxLiveTime + "sec.", randomBar));
                 }
                 break;
             default:
@@ -279,6 +338,9 @@ internal static class ProcessMonitor
                 
         }
     }
+    /// <summary>
+    /// Processing the process menu. Here you choose what to do with a particular process
+    /// </summary>
     private static void ProcessMenuProcessing()
     {
         if (_selectedProcess == null)
@@ -324,7 +386,7 @@ internal static class ProcessMonitor
                 input = Console.ReadLine()?.ToLower();
                 if (double.TryParse(input, out var lifetime))
                 {
-                    _selectedProcess.LiveTime = lifetime;
+                    _selectedProcess.MaxLiveTime = lifetime;
                     MessageList.Add(("Max live time set as " + lifetime, ConsoleColor.Black));
                 }
                 break;
@@ -348,7 +410,7 @@ internal static class ProcessMonitor
             case "s":
                 MessageList.Add(("Name for process search = " +_selectedProcess.SearchName, ConsoleColor.Black));
                 MessageList.Add(("Check frequency = " + _selectedProcess.Frequency, ConsoleColor.Black));
-                MessageList.Add(("Max live time =     " +  TimeSpan.FromMinutes( _selectedProcess.LiveTime).ToString("dd\\.hh\\:mm\\:ss") + "(d.h.m.s)", ConsoleColor.Black));
+                MessageList.Add(("Max live time =     " +  TimeSpan.FromMinutes( _selectedProcess.MaxLiveTime).ToString("dd\\.hh\\:mm\\:ss") + "(d.h.m.s)", ConsoleColor.Black));
                 if (_selectedProcess.MyProcess != null)
                 {
                     MessageList.Add(("Time after start = "+(DateTime.Now - _selectedProcess.MyProcess.StartTime).ToString(@"dd\.hh\:mm\:ss") + "(d.h.m.s)", ConsoleColor.Black));
@@ -364,6 +426,9 @@ internal static class ProcessMonitor
                 break;
         }
     }
+    /// <summary>
+    /// Program entry point
+    /// </summary>
     private static int Main(string[] args)
     {
         Parser.Default.ParseArguments<Options>(args)
@@ -373,10 +438,10 @@ internal static class ProcessMonitor
                 _force = true;
                 if (o.ProcessName != null)
                     AddProcessMenuProcessing(searchName: o.ProcessName, frequency: o.Frequency,
-                        liveTime: o.MaxProcessTime);
+                        maxLiveTime: o.MaxProcessTime);
                 _force = false;
                 _programState = State.MainMenu;
-                while (_programState != State.Stop)
+                while (_programState != State.Exit)
                 {
                     switch (_programState)
                     {
@@ -390,14 +455,19 @@ internal static class ProcessMonitor
                             ProcessMenuProcessing();
                             break;
                         case State.Stop:
+                            foreach (var process in MyProcesses)
+                            {
+                                process?.Stop();
+                            }
+                            MyProcesses.Clear();
+                            _programState = State.Exit;
                             break;
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
                 }
-
-                Console.WriteLine("Stop process monitor program");
             });
+        Console.WriteLine("Stop process monitor program");
         return 0;
     }
 }

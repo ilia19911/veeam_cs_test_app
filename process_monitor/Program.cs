@@ -55,7 +55,7 @@ internal static class ProcessMonitor
     /// </summary>
     private static bool _force;
     /// <summary>
-    /// Internal Method for Generic Parameter Setting
+    /// private Method for Generic Parameter Setting
     /// </summary>
     /// <param name="message">message that is displayed before entering the parameter</param>
     /// <param name="result">the parameter entered by the user</param>
@@ -88,7 +88,7 @@ internal static class ProcessMonitor
         }
     }
     /// <summary>
-    /// Internal Method for process adding from different location. Asks frequency and time live if they not passed 0
+    /// private Method for process adding from different location. Asks frequency and time live if they not passed 0
     /// </summary>
     /// <param name="myProcess">Process object. Can be null if force is true. </param>
     /// <param name="searchName">The name by which the process was searched </param>
@@ -119,6 +119,14 @@ internal static class ProcessMonitor
                 }
                 _programState = State.MainMenu;
             }
+            else
+            {
+                MessageList.Clear();
+            }
+        }
+        else
+        {
+            MessageList.Clear();
         }
     }
     /// <summary>
@@ -318,7 +326,7 @@ internal static class ProcessMonitor
                     foreach (var p in MyProcesses)
                     {
                         var regex = new Regex(input);
-                        if(p.MyProcess != null && regex.IsMatch(p.MyProcess.ProcessName.ToLower()))
+                        if(p?.MyProcess != null && regex.IsMatch(p.MyProcess.ProcessName.ToLower()))
                         {
                             matchesProcesses.Add(p);   
                         }   
